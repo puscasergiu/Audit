@@ -12,6 +12,8 @@ namespace Audit.API
 {
     public class Startup
     {
+        readonly string CorsPolicy = "DevPolicy";
+
         public Startup(IConfiguration configuration)
         {
             Configuration = configuration;
@@ -28,6 +30,18 @@ namespace Audit.API
             services.AddSwaggerGen();
 
             services.AddScoped<ICustomerService, CustomerService>();
+
+            services.AddScoped<IAuditService, AuditService>();
+
+            services.AddCors(options =>
+            {
+                options.AddPolicy(name: CorsPolicy,
+                                  builder =>
+                                  {
+                                      builder.WithOrigins("http://localhost:4200");
+                                  });
+            });
+
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
@@ -40,6 +54,8 @@ namespace Audit.API
             app.UseHttpsRedirection();
 
             app.UseRouting();
+
+            app.UseCors(CorsPolicy);
 
             app.UseSwagger();
 

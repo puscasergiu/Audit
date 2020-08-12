@@ -27,9 +27,9 @@ namespace Audit.DAL
 
                 entity.Property(e => e.KeyValues).IsRequired();
 
-                entity.Property(e => e.NewValues).IsRequired();
+                entity.Property(e => e.NewValues);
 
-                entity.Property(e => e.OldValues).IsRequired();
+                entity.Property(e => e.OldValues);
 
                 entity.Property(e => e.TableName)
                     .IsRequired()
