@@ -1,3 +1,4 @@
+using Audit.API.Infrastructure;
 using Audit.DAL;
 using Audit.Services.Services;
 
@@ -29,9 +30,6 @@ namespace Audit.API
 
             services.AddSwaggerGen();
 
-            services.AddScoped<ICustomerService, CustomerService>();
-
-            services.AddScoped<IAuditService, AuditService>();
 
             services.AddCors(options =>
             {
@@ -42,6 +40,11 @@ namespace Audit.API
                                   });
             });
 
+            services.AddScoped<ICustomerService, CustomerService>();
+
+            services.AddScoped<IAuditService, AuditService>();
+
+            services.AddScoped<IMockUserAccessor, IMockUserAccessor>();
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
