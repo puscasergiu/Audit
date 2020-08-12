@@ -29,6 +29,9 @@ namespace Audit.Services.Services
 
         public async Task<Customer> AddCustomerAsync(Customer customer)
         {
+            // should be removed when the correct object will be used
+            customer.CustomerId = 0;
+
             if (!(await ValidateCustomer(customer)))
             {
                 throw new System.Exception("A customer with the same email already exists");

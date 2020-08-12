@@ -1,7 +1,7 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+
 using Audit.DAL.Infrastructure;
 using Audit.DAL.Models;
 
@@ -54,29 +54,31 @@ namespace Audit.DAL
             });
         }
 
-        public override int SaveChanges()
-        {
-            AuditService.ProcessChanges(ChangeTracker.Entries());
-
-            return base.SaveChanges();
-        }
-
-        public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
+        public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
         {
             List<AuditEntry> auditEntries = AuditService.ProcessChanges(ChangeTracker.Entries());
 
-            Task<int> result = base.SaveChangesAsync(cancellationToken);
+            int result = await base.SaveChangesAsync(cancellationToken);
 
-            AuditService.AfterProcessChanges(auditEntries);
+            AuditService.ProcessChangesAfterSave(auditEntries);
 
-            List<AuditLog> logs = new List<AuditLog>();
-
-            foreach (var item in auditEntries)
-            {
-                logs.Add(item.ToAudit());
-            }
+            await HandleLogsAsync(auditEntries);
 
             return result;
+        }
+
+        private async Task HandleLogsAsync(List<AuditEntry> entries)
+        {
+            List<AuditLog> logs = new List<AuditLog>();
+
+            foreach (AuditEntry entry in entries)
+            {
+                logs.Add(entry.ToAuditLog());
+            }
+
+            AuditLog.AddRange(logs);
+
+            await base.SaveChangesAsync();
         }
     }
 }

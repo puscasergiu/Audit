@@ -1,47 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-
-using Audit.DAL.Models;
+﻿using System.Collections.Generic;
 
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 
-using Newtonsoft.Json;
-
 namespace Audit.DAL.Infrastructure
 {
-    public class AuditEntry
-    {
-        public AuditEntry(EntityEntry entry)
-        {
-            Entry = entry;
-        }
-
-        public EntityEntry Entry { get; }
-        public string TableName { get; set; }
-        public Dictionary<string, object> KeyValues { get; } = new Dictionary<string, object>();
-        public Dictionary<string, object> OldValues { get; } = new Dictionary<string, object>();
-        public Dictionary<string, object> NewValues { get; } = new Dictionary<string, object>();
-        public List<PropertyEntry> TemporaryProperties { get; } = new List<PropertyEntry>();
-
-        public bool HasTemporaryProperties => TemporaryProperties.Any();
-
-        public AuditLog ToAudit()
-        {
-            AuditLog audit = new AuditLog()
-            {
-                TableName = TableName,
-                Date = DateTime.UtcNow,
-                KeyValues = JsonConvert.SerializeObject(KeyValues),
-                NewValues = NewValues.Count == 0 ? null : JsonConvert.SerializeObject(NewValues),
-                OldValues = OldValues.Count == 0 ? null : JsonConvert.SerializeObject(OldValues),
-            };
-
-            return audit;
-        }
-    }
-
     public class AuditService
     {
         public static List<AuditEntry> ProcessChanges(IEnumerable<EntityEntry> entries)
@@ -50,25 +13,11 @@ namespace Audit.DAL.Infrastructure
 
             foreach (EntityEntry entry in entries)
             {
-
-                //AuditLog audit = new AuditLog()
-                //{
-                //    TableName = entry.Entity.GetType().Name,
-                //    PrimaryKey = entry.Metadata.FindPrimaryKey()?.ToString()
-                //};
-                //var key = entry.Metadata.FindPrimaryKey();
-
-                //foreach (PropertyEntry property in entry.Properties)
-                //{
-                //    if
-                //}
-
                 AuditEntry auditEntry = new AuditEntry(entry);
 
-                auditEntry.TableName = entry.Metadata.GetType().Name;
                 auditEntries.Add(auditEntry);
 
-                foreach (var property in entry.Properties)
+                foreach (PropertyEntry property in entry.Properties)
                 {
                     if (property.IsTemporary)
                     {
@@ -107,13 +56,8 @@ namespace Audit.DAL.Infrastructure
             return auditEntries;
         }
 
-        public static List<AuditEntry> AfterProcessChanges(List<AuditEntry> auditEntries)
+        public static List<AuditEntry> ProcessChangesAfterSave(List<AuditEntry> auditEntries)
         {
-            if (auditEntries == null || auditEntries.Count == 0)
-            {
-                return new List<AuditEntry>();
-            }
-
             foreach (AuditEntry auditEntry in auditEntries)
             {
                 foreach (PropertyEntry prop in auditEntry.TemporaryProperties)
@@ -132,6 +76,4 @@ namespace Audit.DAL.Infrastructure
             return auditEntries;
         }
     }
-
-
 }
