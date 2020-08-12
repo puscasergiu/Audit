@@ -1,0 +1,1 @@
+﻿dotnet ef dbcontext scaffold "Server=tcp:audit-sql-srv.database.windows.net,1433;Initial Catalog=audit-sql-db;Persist Security Info=False;User ID=test;Password=thisIsDog11;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;"
